@@ -1,6 +1,6 @@
 ###### Desc
 
-Installs and configures hbase and required software (zookeeper, hbase master and regionservers, thrift and rest)
+Installs and configures spark (master, thrift, historyserver and slave)
 
 ###### Deps
 
