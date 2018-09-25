@@ -1,0 +1,6 @@
+spark.master                     {{ spark_master_url }}
+spark.eventLog.enabled           {{ spark_eventlog_enabled | lower }}
+spark.eventLog.dir               {{ spark_eventlog_dir }}
+spark.history.fs.logDirectory    {{ spark_history_fs_logdirectory }}
+spark.serializer                 org.apache.spark.serializer.KryoSerializer
+spark.driver.memory              {{ spark_driver_memory }}

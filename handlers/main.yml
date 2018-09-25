@@ -1,0 +1,29 @@
+---
+
+- name: restart spark-master
+  service:
+    name: spark-master
+    state: restarted
+  when: spark_master is defined and spark_master
+
+- name: restart spark-historyserver
+  service:
+    name: spark-historyserver
+    state: restarted
+  when: spark_historyserver is defined and spark_historyserver
+
+- name: restart spark-slave
+  service:
+    name: spark-slave
+    state: restarted
+  when: spark_slave is defined and spark_slave
+
+- name: restart spark-thriftserver
+  service:
+    name: spark-thriftserver
+    state: restarted
+  when: spark_thriftserver is defined and spark_thriftserver
+
+- name: reload systemd
+  systemd:
+    daemon_reload: yes

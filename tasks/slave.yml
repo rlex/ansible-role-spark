@@ -1,0 +1,15 @@
+---
+
+- name: create spark slave systemd service file
+  template:
+    src: systemd/spark-slave.service.j2
+    dest: /etc/systemd/system/spark-slave.service
+  notify:
+  - reload systemd
+  - restart spark-slave
+
+- name: start spark slave
+  service:
+    name: spark-slave
+    state: started
+    enabled: yes

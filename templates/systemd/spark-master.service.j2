@@ -1,0 +1,16 @@
+[Unit]
+Description=Spark master
+After=network.target
+
+[Service]
+Type=forking
+Environment=HADOOP_HOME={{ hadoop_home }}
+WorkingDirectory={{ spark_home }}
+ExecStart={{ spark_home }}/sbin/start-master.sh
+User={{ hadoop_user }}
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

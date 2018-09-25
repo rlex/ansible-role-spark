@@ -1,0 +1,15 @@
+---
+
+- name: create spark thriftserver systemd service file
+  template:
+    src: systemd/spark-thriftserver.service.j2
+    dest: /etc/systemd/system/spark-thriftserver.service
+  notify:
+  - reload systemd
+  - restart spark-thriftserver
+
+- name: start spark thriftserver
+  service:
+    name: spark-thriftserver
+    state: started
+    enabled: yes

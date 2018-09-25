@@ -1,0 +1,9 @@
+spark_version: "2.2.0"
+spark_home: '{{ hadoop_user_home }}/spark-{{ spark_version }}-bin-without-hadoop'
+spark_master_host: '{{ hadoop_master_host }}'
+spark_eventlog_dir: hdfs://{{ hadoop_hdfs_master_host }}:9820/spark/logs
+spark_history_fs_logdirectory: hdfs://{{ hadoop_hdfs_master_host }}:9820/spark/apphistory
+spark_eventlog_enabled: true
+spark_driver_memory: 1g
+spark_log_dir: /var/log/spark
+spark_master_url: 'spark://{{ hadoop_master_host }}:7077'

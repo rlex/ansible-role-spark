@@ -1,0 +1,78 @@
+---
+
+- name: download spark tarball
+  get_url:
+    url: 'https://www.apache.org/dyn/closer.cgi?action=download&filename=spark/spark-{{ spark_version }}/spark-{{ spark_version }}-bin-without-hadoop.tgz'
+    dest: '{{ hadoop_user_home }}/spark-{{ spark_version }}.tgz'
+  become: yes
+  become_user: '{{ hadoop_user }}'
+
+- name: extract spark tarball
+  unarchive:
+    src: '{{ hadoop_user_home }}/spark-{{ spark_version }}.tgz'
+    creates: '{{ hadoop_user_home }}/spark-{{ spark_version }}-bin-without-hadoop'
+    dest: '{{ hadoop_user_home }}'
+    remote_src: true
+  become: yes
+  become_user: '{{ hadoop_user }}'
+
+- name: set hadoop classpaths to hadoop installation in .bashrc
+  lineinfile:
+    dest: '{{ hadoop_user_home }}/.bashrc'
+    line: 'export SPARK_DIST_CLASSPATH=$(hadoop classpath)'
+    regexp:  '^(# *)?export SPARK_DIST_CLASSPATH='
+
+- name: create spark log directory
+  file: path={{ spark_log_dir }} state=directory owner={{ hadoop_user }} group={{ hadoop_group }}
+
+- name: copy spark-env.sh.template to spark-env.sh
+  copy:
+    src: '{{ spark_home }}/conf/spark-env.sh.template'
+    dest: '{{ spark_home }}/conf/spark-env.sh'
+    remote_src: yes
+    force: no
+  become: yes
+  become_user: '{{ hadoop_user }}'
+
+- name: configure spark_env.sh
+  lineinfile:
+    dest: '{{ spark_home }}/conf/spark-env.sh'
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: '^(# *)?HADOOP_CONF_DIR=.*'
+      line: 'HADOOP_CONF_DIR={{ hadoop_home }}/etc/hadoop/'
+    - regexp: '^(# *)?SPARK_LOG_DIR=.*'
+      line: 'SPARK_LOG_DIR={{ spark_log_dir }}'
+    - regexp: '^(# *)?SPARK_DIST_CLASSPATH=.*'
+      line: 'SPARK_DIST_CLASSPATH=$({{ hadoop_home }}/bin/hadoop classpath)'
+    - regexp: '^(# *)?SPARK_MASTER_HOST=.*'
+      line: 'SPARK_MASTER_HOST={{ spark_master_host }}'
+  notify:
+    - restart spark-master
+    - restart spark-historyserver
+    - restart spark-slave
+
+- name: configure spark
+  template:
+    src: 'spark-defaults.conf.j2'
+    dest: '{{ spark_home }}/conf/spark-defaults.conf'
+    owner: '{{ hadoop_user }}'
+    group: '{{ hadoop_group }}'
+  notify:
+    - restart spark-master
+    - restart spark-historyserver
+    - restart spark-slave
+
+- include_tasks: master.yml
+  when: spark_master is defined and spark_master
+
+- include_tasks: historyserver.yml
+  when: spark_historyserver is defined and spark_historyserver
+
+- include_tasks: slave.yml
+  when: spark_slave is defined and spark_slave
+
+- include_tasks: thriftserver.yml
+  when: spark_thriftserver is defined and spark_thriftserver

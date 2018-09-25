@@ -1,0 +1,15 @@
+---
+
+- name: create spark historyserver systemd service file
+  template:
+    src: systemd/spark-historyserver.service.j2
+    dest: /etc/systemd/system/spark-historyserver.service
+  notify:
+  - reload systemd
+  - restart spark-historyserver
+
+- name: start spark historyserver
+  service:
+    name: spark-historyserver
+    state: started
+    enabled: yes

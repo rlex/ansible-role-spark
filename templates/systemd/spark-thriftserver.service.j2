@@ -1,0 +1,16 @@
+[Unit]
+Description=Spark thriftserver
+After=network.target
+
+[Service]
+Type=forking
+Environment=HADOOP_HOME={{ hadoop_home }}
+WorkingDirectory={{ spark_home }}
+ExecStart={{ spark_home }}/sbin/start-thriftserver.sh
+User={{ hadoop_user }}
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
