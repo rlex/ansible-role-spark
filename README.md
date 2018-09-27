@@ -21,7 +21,7 @@ Also don't forget to set spark_master_host to ip pointing to node with spark_mas
 
 ###### Ports
 
-* 8080 - master web
+* 8081 - master web
 * 18080 - historyserver
 
 ###### Pre-setup
