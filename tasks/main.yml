@@ -4,6 +4,7 @@
   get_url:
     url: 'https://www.apache.org/dyn/closer.cgi?action=download&filename=spark/spark-{{ spark_version }}/spark-{{ spark_version }}-bin-without-hadoop.tgz'
     dest: '{{ hadoop_user_home }}/spark-{{ spark_version }}.tgz'
+    checksum: '{{ spark_checksum }}'
   become: yes
   become_user: '{{ hadoop_user }}'
 

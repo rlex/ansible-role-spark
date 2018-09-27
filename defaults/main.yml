@@ -1,4 +1,5 @@
-spark_version: "2.2.0"
+spark_version: 2.3.2
+spark_checksum: sha512:79d1de6870cf43ecc059d4423540124610ef00abc929c171be42548b505f115906e251e4604ed7d22b6a8cce012a845d90017319c2abb3d5d700369b1c335c6d
 spark_home: '{{ hadoop_user_home }}/spark-{{ spark_version }}-bin-without-hadoop'
 spark_master_host: '{{ hadoop_master_host }}'
 spark_eventlog_dir: hdfs://{{ hadoop_hdfs_master_host }}:9820/spark/logs
