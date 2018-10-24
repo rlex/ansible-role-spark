@@ -41,7 +41,7 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
-  with_items:
+  loop:
     - regexp: '^(# *)?HADOOP_CONF_DIR=.*'
       line: 'HADOOP_CONF_DIR={{ hadoop_home }}/etc/hadoop/'
     - regexp: '^(# *)?SPARK_LOG_DIR=.*'
