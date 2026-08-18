@@ -1,79 +1,90 @@
 ---
+- name: Download spark tarball
+  ansible.builtin.get_url:
+    mode: '0644'
+    url: "https://www.apache.org/dyn/closer.cgi?action=download&filename=spark/spark-{{ spark_version }}/spark-{{ spark_version }}-bin-without-hadoop.tgz"
+    dest: "{{ hadoop_user_home }}/spark-{{ spark_version }}.tgz"
+    checksum: "{{ spark_checksum }}"
+  become: true
+  become_user: "{{ hadoop_user }}"
 
-- name: download spark tarball
-  get_url:
-    url: 'https://www.apache.org/dyn/closer.cgi?action=download&filename=spark/spark-{{ spark_version }}/spark-{{ spark_version }}-bin-without-hadoop.tgz'
-    dest: '{{ hadoop_user_home }}/spark-{{ spark_version }}.tgz'
-    checksum: '{{ spark_checksum }}'
-  become: yes
-  become_user: '{{ hadoop_user }}'
-
-- name: extract spark tarball
-  unarchive:
-    src: '{{ hadoop_user_home }}/spark-{{ spark_version }}.tgz'
-    creates: '{{ hadoop_user_home }}/spark-{{ spark_version }}-bin-without-hadoop'
-    dest: '{{ hadoop_user_home }}'
+- name: Extract spark tarball
+  ansible.builtin.unarchive:
+    src: "{{ hadoop_user_home }}/spark-{{ spark_version }}.tgz"
+    creates: "{{ hadoop_user_home }}/spark-{{ spark_version }}-bin-without-hadoop"
+    dest: "{{ hadoop_user_home }}"
     remote_src: true
-  become: yes
-  become_user: '{{ hadoop_user }}'
+  become: true
+  become_user: "{{ hadoop_user }}"
 
-- name: set hadoop classpaths to hadoop installation in .bashrc
-  lineinfile:
-    dest: '{{ hadoop_user_home }}/.bashrc'
-    line: 'export SPARK_DIST_CLASSPATH=$(hadoop classpath)'
-    regexp:  '^(# *)?export SPARK_DIST_CLASSPATH='
+- name: Set hadoop classpaths to hadoop installation in .bashrc
+  ansible.builtin.lineinfile:
+    dest: "{{ hadoop_user_home }}/.bashrc"
+    line: "export SPARK_DIST_CLASSPATH=$(hadoop classpath)"
+    regexp: "^(# *)?export SPARK_DIST_CLASSPATH="
 
-- name: create spark log directory
-  file: path={{ spark_log_dir }} state=directory owner={{ hadoop_user }} group={{ hadoop_group }}
+- name: Create spark log directory
+  ansible.builtin.file:
+    mode: '0755'
 
-- name: copy spark-env.sh.template to spark-env.sh
-  copy:
-    src: '{{ spark_home }}/conf/spark-env.sh.template'
-    dest: '{{ spark_home }}/conf/spark-env.sh'
-    remote_src: yes
-    force: no
-  become: yes
-  become_user: '{{ hadoop_user }}'
+    path: "{{ spark_log_dir }}"
+    state: directory
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_group }}"
+- name: Copy spark-env.sh.template to spark-env.sh
+  ansible.builtin.copy:
+    mode: '0644'
+    src: "{{ spark_home }}/conf/spark-env.sh.template"
+    dest: "{{ spark_home }}/conf/spark-env.sh"
+    remote_src: true
+    force: false
+  become: true
+  become_user: "{{ hadoop_user }}"
 
-- name: configure spark_env.sh
-  lineinfile:
-    dest: '{{ spark_home }}/conf/spark-env.sh'
+- name: Configure spark_env.sh
+  ansible.builtin.lineinfile:
+    dest: "{{ spark_home }}/conf/spark-env.sh"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
   loop:
-    - regexp: '^(# *)?HADOOP_CONF_DIR=.*'
-      line: 'HADOOP_CONF_DIR={{ hadoop_home }}/etc/hadoop/'
-    - regexp: '^(# *)?SPARK_LOG_DIR=.*'
-      line: 'SPARK_LOG_DIR={{ spark_log_dir }}'
-    - regexp: '^(# *)?SPARK_DIST_CLASSPATH=.*'
-      line: 'SPARK_DIST_CLASSPATH=$({{ hadoop_home }}/bin/hadoop classpath)'
-    - regexp: '^(# *)?SPARK_MASTER_HOST=.*'
-      line: 'SPARK_MASTER_HOST={{ spark_master_host }}'
+    - regexp: "^(# *)?HADOOP_CONF_DIR=.*"
+      line: "HADOOP_CONF_DIR={{ hadoop_home }}/etc/hadoop/"
+    - regexp: "^(# *)?SPARK_LOG_DIR=.*"
+      line: "SPARK_LOG_DIR={{ spark_log_dir }}"
+    - regexp: "^(# *)?SPARK_DIST_CLASSPATH=.*"
+      line: "SPARK_DIST_CLASSPATH=$({{ hadoop_home }}/bin/hadoop classpath)"
+    - regexp: "^(# *)?SPARK_MASTER_HOST=.*"
+      line: "SPARK_MASTER_HOST={{ spark_master_host }}"
   notify:
-    - restart spark-master
-    - restart spark-historyserver
-    - restart spark-slave
+    - Restart spark-master
+    - Restart spark-historyserver
+    - Restart spark-slave
 
-- name: configure spark
-  template:
-    src: 'spark-defaults.conf.j2'
-    dest: '{{ spark_home }}/conf/spark-defaults.conf'
-    owner: '{{ hadoop_user }}'
-    group: '{{ hadoop_group }}'
+- name: Configure spark
+  ansible.builtin.template:
+    mode: '0644'
+    src: "spark-defaults.conf.j2"
+    dest: "{{ spark_home }}/conf/spark-defaults.conf"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_group }}"
   notify:
-    - restart spark-master
-    - restart spark-historyserver
-    - restart spark-slave
+    - Restart spark-master
+    - Restart spark-historyserver
+    - Restart spark-slave
 
-- include_tasks: master.yml
+- name: Include master.yml
+  ansible.builtin.import_tasks: master.yml
   when: spark_master is defined and spark_master
 
-- include_tasks: historyserver.yml
+- name: Include historyserver.yml
+  ansible.builtin.import_tasks: historyserver.yml
   when: spark_historyserver is defined and spark_historyserver
 
-- include_tasks: slave.yml
+- name: Include slave.yml
+  ansible.builtin.import_tasks: slave.yml
   when: spark_slave is defined and spark_slave
 
-- include_tasks: thriftserver.yml
+- name: Include thriftserver.yml
+  ansible.builtin.import_tasks: thriftserver.yml
   when: spark_thriftserver is defined and spark_thriftserver

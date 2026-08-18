@@ -1,29 +1,28 @@
 ---
-
-- name: restart spark-master
-  service:
+- name: Restart spark-master
+  ansible.builtin.service:
     name: spark-master
     state: restarted
   when: spark_master is defined and spark_master
 
-- name: restart spark-historyserver
-  service:
+- name: Restart spark-historyserver
+  ansible.builtin.service:
     name: spark-historyserver
     state: restarted
   when: spark_historyserver is defined and spark_historyserver
 
-- name: restart spark-slave
-  service:
+- name: Restart spark-slave
+  ansible.builtin.service:
     name: spark-slave
     state: restarted
   when: spark_slave is defined and spark_slave
 
-- name: restart spark-thriftserver
-  service:
+- name: Restart spark-thriftserver
+  ansible.builtin.service:
     name: spark-thriftserver
     state: restarted
   when: spark_thriftserver is defined and spark_thriftserver
 
-- name: reload systemd
-  systemd:
-    daemon_reload: yes
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
